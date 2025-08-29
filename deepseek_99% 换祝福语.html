@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nico 生日快乐！</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+        
+        .active {
+            display: flex;
+        }
+        
+        .bg-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        
+        .content {
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+            max-width: 90%;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn-blue {
+            background-color: #a0d2eb;
+            color: #2d3436;
+        }
+        
+        .btn-red {
+            background-color: #ff7675;
+            color: #2d3436;
+        }
+        
+        .transition-img {
+            position: absolute;
+            width: 80%;
+            max-width: 500px;
+            animation: slideIn 1s ease-out, shake 0.5s ease-in-out 1s 3;
+        }
+        
+        .countdown-img {
+            width: 60%;
+            max-width: 300px;
+            margin: 10px;
+        }
+        
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .slide.active {
+            display: flex;
+        }
+        
+        .slide-img {
+            max-width: 90%;
+            max-height: 70%;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        .message-bubble {
+            background-color: rgba(173, 216, 230, 0.9);
+            padding: 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            color: #2d3436;
+            font-size: 16px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message-bubble:after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 15px 15px 15px;
+            border-style: solid;
+            border-color: rgba(173, 216, 230, 0.9) transparent;
+        }
+        
+        .ending-images {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .ending-img {
+            max-width: 45%;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .final-message {
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 80%;
+            color: #2d3436;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-top: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .music-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 500px;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 50px;
+            display: none;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #74b9ff;
+            border-radius: 4px;
+            width: 0%;
+        }
+        
+        .effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .effect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes slideIn {
+            from { right: -100%; }
+            to { right: 10%; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <img src="https://i.imgur.com/BQkpXnk.jpeg" class="bg-image">
+        <div class="content">
+            <img src="https://i.imgur.com/12TwVda.jpeg" style="max-width: 80%; border-radius: 15px; margin-bottom: 30px;">
+            <div>
+                <button id="yes-btn" class="btn btn-blue">Nico Click Here</button>
+                <button id="no-btn" class="btn btn-red">No!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拒绝页面 -->
+    <div id="reject-page" class="page">
+        <img src="https://i.imgur.com/msYz8KG.jpeg" class="bg-image">
+    </div>
+
+    <!-- 过渡页面 -->
+    <div id="transition-page" class="page">
+        <img src="https://i.imgur.com/Va4wAtF.jpeg" class="transition-img" id="transition-img">
+    </div>
+
+    <!-- 倒数页面 -->
+    <div id="countdown-page" class="page">
+        <img src="https://i.imgur.com/2uSF5sK.jpeg" class="bg-image">
+        <div id="countdown-content">
+            <img src="https://i.imgur.com/pb6zGb7.jpeg" class="countdown-img" id="countdown-3">
+            <img src="https://i.imgur.com/U0X0aRg.jpeg" class="countdown-img" id="countdown-2">
+            <img src="https://i.imgur.com/d1u5nF2.jpeg" class="countdown-img" id="countdown-1">
+        </div>
+    </div>
+
+    <!-- 幻灯片页面 -->
+    <div id="slideshow-page" class="page">
+        <div class="slide active" data-index="0">
+            <img src="https://i.imgur.com/Mb1G5Y2.jpeg" class="slide-img">
+            <div class="message-bubble">ニコ、誕生日おめでとう！ステージが輝き、毎日が楽しく輝くように！君の笑顔が世界を照らすよ。いつも幸せでいてね！(Pinguみたいに可愛く、毎日冒険しよう！)</div>
+        </div>
+        <div class="slide" data-index="1">
+            <img src="https://i.imgur.com/Qdyfqxd.jpeg" class="slide-img">
+            <div class="message-bubble">ハッピーバースデー、ニコ！キミの歌声と情熱は、どんな小さな会場でも魔法をかける。キミの夢がもっと大きく羽ばたきますように</div>
+        </div>
+        <div class="slide" data-index="2">
+            <img src="https://i.imgur.com/6F3jN8e.jpeg" class="slide-img">
+            <div class="message-bubble">希望你每天都充满活力，像企鹅一样跳跃，像阳光一样闪耀！愿你的每一天都充满欢笑和惊喜，生日快乐！</div>
+        </div>
+        <div class="slide" data-index="3">
+            <img src="https://i.imgur.com/8hKdwz5.jpeg" class="slide-img">
+            <div class="message-bubble">祝Nico生日快乐！愿你的生活像Pingu的世界一样充满乐趣和冒险，每一天都有新的发现和快乐！</div>
+        </div>
+        <div class="slide" data-index="4">
+            <img src="https://i.imgur.com/kFkfqSz.jpeg" class="slide-img">
+            <div class="message-bubble">Happy Birthday Nico! May your special day be filled with joy, laughter, and all the things you love the most!</div>
+        </div>
+        <div class="slide" data-index="5">
+            <img src="https://i.imgur.com/3JOJGiQ.jpeg" class="slide-img">
+            <div class="message-bubble">誕生日おめでとう！君の魅力はピング以上！これからも素敵な歌声でみんなを魅了し続けてください！</div>
+        </div>
+        <div class="slide" data-index="6">
+            <img src="https://i.imgur.com/7EdifTC.jpeg" class="slide-img">
+            <div class="message-bubble">Nico, 祝你生日快乐！愿你的每一天都像Pingu的冒险一样精彩，充满惊喜和欢笑！</div>
+        </div>
+        <div class="slide" data-index="7">
+            <img src="https://i.imgur.com/AICFv8B.jpeg" class="slide-img">
+            <div class="message-bubble">Happy Birthday! 願你的每一天都充滿音樂和歡笑，就像Pingu的世界一樣充滿奇妙冒險！</div>
+        </div>
+        <div class="slide" data-index="8">
+            <img src="https://i.imgur.com/7omIcWb.jpeg" class="slide-img">
+            <div class="message-bubble">ニコちゃん、お誕生日おめでとう！これからもずっと笑顔でいてね。君の幸せを心から願っています！</div>
+        </div>
+        <div class="slide" data-index="9">
+            <img src="https://i.imgur.com/yPIsLLD.jpeg" class="slide-img">
+            <div class="message-bubble">老大：Happy Birthday ！！！ (´▽`ʃ♡ƪ) 願你的每一天都充滿陽光和歡笑，永遠保持那顆年輕的心！</div>
+        </div>
+        <div class="slide" data-index="10">
+            <img src="https://i.imgur.com/Zng3WXC.jpeg" class="slide-img">
+            <div class="message-bubble">お誕生日おめでとう！Nicoに出会えて本当によかった。いつもたくさんの笑顔をありがとう。</div>
+        </div>
+        <div class="slide" data-index="11">
+            <img src="https://i.imgur.com/uzaLtYv.jpeg" class="slide-img">
+            <div class="message-bubble">祝Nico生日快乐！愿你的生活像Pingu的雪地一样纯净美好，像企鹅家族一样充满温暖和爱！</div>
+        </div>
+        <div class="slide" data-index="12">
+            <img src="https://i.imgur.com/Aj3TjaV.jpeg" class="slide-img">
+            <div class="message-bubble">Happy Birthday Nico! May your year ahead be as wonderful and special as you are!</div>
+        </div>
+        <div class="slide" data-index="13">
+            <img src="https://i.imgur.com/OLSiC5m.jpeg" class="slide-img">
+            <div class="message-bubble">誕生日おめでとうございます！これからも素晴らしい音楽で私たちを楽しませてください！</div>
+        </div>
+        <div class="slide" data-index="14">
+            <img src="https://i.imgur.com/ok9fRXy.jpeg" class="slide-img">
+            <div class="message-bubble">ニコ、11月4日はキミの特別な日！ピグーの魚泥棒レベルでケーキをガッツリ食べちゃえ！</div>
+        </div>
+        <div class="slide" data-index="15">
+            <img src="https://i.imgur.com/oVw8wqs.jpeg" class="slide-img">
+            <div class="message-bubble">祝Nico生日快乐！愿你的梦想像Pingu的冒险一样，虽然有时会遇到挑战，但最终总是充满欢笑和成功！</div>
+        </div>
+        <div class="slide" data-index="16">
+            <img src="https://i.imgur.com/xOx4bUm.png" class="slide-img">
+            <div class="message-bubble">Happy Birthday! 願你的生命如同最美妙的樂章，充滿動人的旋律和難忘的時刻！</div>
+        </div>
+        <div class="slide" data-index="17">
+            <img src="https://i.imgur.com/SUbAQUa.png" class="slide-img">
+            <div class="message-bubble">ニコ、誕生日おめでとう！君の笑顔は世界を明るくする。これからもずっと輝いていてね！</div>
+        </div>
+        <div class="slide" data-index="18">
+            <img src="https://i.imgur.com/KcwOlfh.png" class="slide-img">
+            <div class="message-bubble">祝Nico生日快乐！愿你的每一天都充满Pingu般的奇妙冒险和无限欢乐！</div>
+        </div>
+        <div class="slide" data-index="19">
+            <img src="https://i.imgur.com/3o3gdQ1.png" class="slide-img">
+            <div class="message-bubble">Happy Birthday Nico! May your special day be as amazing as your voice and as warm as your heart!</div>
+        </div>
+        <div class="slide" data-index="20">
+            <img src="https://i.imgur.com/632BRLm.jpeg" class="slide-img">
+            <div class="message-bubble">誕生日おめでとう！これからもずっと応援しています。素敵な一年になりますように！</div>
+        </div>
+    </div>
+
+    <!-- 结束页面 -->
+    <div id="ending-page" class="page">
+        <img src="https://i.imgur.com/kmuV8u9.jpeg" class="bg-image">
+        <div class="ending-images">
+            <img src="https://i.imgur.com/XIvZ9Dj.jpeg" class="ending-img">
+            <img src="https://media1.tenor.com/m/Qvd3_CsaI1YAAAAC/pingu-bye.gif" class="ending-img">
+        </div>
+        <div class="final-message">
+            <p>亲爱的Nico，祝你生日快乐！在这个特别的日子里，愿你的心中充满阳光，笑容永远灿烂。感谢你为这个世界带来的美妙音乐和无限欢乐。愿你未来的每一天都像Pingu的冒险一样精彩纷呈，充满惊喜与成就！</p>
+            <p>ニコ、お誕生日おめでとうございます！あなたの笑顔と歌声がもっと多くの人々に幸せを届けますように。これからもずっと健康で幸せでありますように。素晴らしい一年になりますように！</p>
+        </div>
+    </div>
+
+    <!-- 音乐控制 -->
+    <div class="music-controls">
+        <div class="progress-container">
+            <div class="progress"></div>
+        </div>
+    </div>
+
+    <!-- 特效区域 -->
+    <div class="effects"></div>
+
+    <!-- 音频元素 -->
+    <audio id="click-sound" src="https://www.myinstants.com/media/sounds/noot-noot.mp3"></audio>
+    <audio id="bday-song" src="https://github.com/rex9898/pingu-bday-song/raw/refs/heads/main/%E3%83%80%E3%83%80%E3%83%80%E3%83%80%E5%A4%A9%E4%BD%BF%20%20%E3%83%8A%E3%83%8A%E3%83%B2%E3%82%A2%E3%82%AB%E3%83%AA.mp3"></audio>
+    <audio id="reject-song" src="https://github.com/rex9898/pingu-bday-song/raw/refs/heads/main/ano%E3%83%8F%E3%83%83%E3%83%94%E3%83%BC%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%83%81%E3%83%A3%E3%83%83%E3%83%94%E3%83%BC%20%20%E3%82%A2%E3%83%8B%E3%83%A1%E3%82%BF%E3%82%B3%E3%83%94%E3%83%BC%E3%81%AE%E5%8E%9F%E7%BD%AACollaboration%20Music%20Video.mp3"></audio>
+
+    <script>
+        // 页面元素
+        const pages = {
+            home: document.getElementById('home-page'),
+            reject: document.getElementById('reject-page'),
+            transition: document.getElementById('transition-page'),
+            countdown: document.getElementById('countdown-page'),
+            slideshow: document.getElementById('slideshow-page'),
+            ending: document.getElementById('ending-page')
+        };
+
+        // 按钮
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+
+        // 音频
+        const clickSound = document.getElementById('click-sound');
+        const bdaySong = document.getElementById('bday-song');
+        const rejectSong = document.getElementById('reject-song');
+
+        // 音乐控制
+        const musicControls = document.querySelector('.music-controls');
+        const progressContainer = document.querySelector('.progress-container');
+        const progress = document.querySelector('.progress');
+
+        // 幻灯片
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        // 特效图片
+        const effectImages = [
+            'https://i.imgur.com/y4l8HGN.png',
+            'https://i.imgur.com/bVfYFfB.png',
+            'https://i.imgur.com/Kv19KJ1.png',
+            'https://i.imgur.com/wgk7Qbw.png'
+        ];
+
+        // 切换页面函数
+        function showPage(page) {
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            page.classList.add('active');
+        }
+
+        // 创建特效
+        function createEffects() {
+            const effectsContainer = document.querySelector('.effects');
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const effect = document.createElement('div');
+                    effect.className = 'effect';
+                    const randomImg = effectImages[Math.floor(Math.random() * effectImages.length)];
+                    effect.style.backgroundImage = `url(${randomImg})`;
+                    effect.style.left = Math.random() * 100 + '%';
+                    effect.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                    effect.style.opacity = Math.random() * 0.5 + 0.5;
+                    effectsContainer.appendChild(effect);
+                    
+                    // 移除元素并在完成后创建新元素
+                    setTimeout(() => {
+                        effect.remove();
+                    }, parseFloat(effect.style.animationDuration) * 1000);
+                }, i * 1000);
+            }
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const percent = (bdaySong.currentTime / bdaySong.duration) * 100;
+            progress.style.width = percent + '%';
+            
+            // 检查是否应该显示结束页面（最后16秒）
+            if (bdaySong.duration - bdaySong.currentTime <= 16) {
+                showPage(pages.ending);
+            }
+            
+            // 更新幻灯片
+            updateSlideshow();
+        }
+
+        // 更新幻灯片
+        function updateSlideshow() {
+            const totalSlides = slides.length;
+            const slideDuration = bdaySong.duration / totalSlides;
+            const newSlide = Math.floor(bdaySong.currentTime / slideDuration);
+            
+            if (newSlide !== currentSlide && newSlide < totalSlides) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = newSlide;
+                slides[currentSlide].classList.add('active');
+            }
+        }
+
+        // 进度条点击事件
+        progressContainer.addEventListener('click', (e) => {
+            const width = progressContainer.clientWidth;
+            const clickX = e.offsetX;
+            const percent = clickX / width;
+            bdaySong.currentTime = percent * bdaySong.duration;
+        });
+
+        // 按钮事件
+        yesBtn.addEventListener('click', () => {
+            clickSound.play();
+            showPage(pages.transition);
+            
+            setTimeout(() => {
+                showPage(pages.countdown);
+                
+                // 显示3
+                document.getElementById('countdown-3').style.display = 'block';
+                
+                setTimeout(() => {
+                    // 显示2
+                    document.getElementById('countdown-3').style.display = 'none';
+                    document.getElementById('countdown-2').style.display = 'block';
+                    
+                    setTimeout(() => {
+                        // 显示1
+                        document.getElementById('countdown-2').style.display = 'none';
+                        document.getElementById('countdown-1').style.display = 'block';
+                        
+                        setTimeout(() => {
+                            showPage(pages.slideshow);
+                            musicControls.style.display = 'block';
+                            bdaySong.play();
+                            createEffects();
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 2000);
+        });
+
+        noBtn.addEventListener('click', () => {
+            showPage(pages.reject);
+            rejectSong.play();
+        });
+
+        // 音频事件
+        bdaySong.addEventListener('timeupdate', updateProgress);
+        bdaySong.addEventListener('ended', () => {
+            musicControls.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
